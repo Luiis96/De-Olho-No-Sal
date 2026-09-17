@@ -14,6 +14,7 @@ function formatPtBr(n: number, decimals = 0) {
 
 export default function SaltCalculator() {
   const [qty, setQty] = useState<Record<string, number>>({});
+  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
   const changeQty = (id: string, delta: number) => {
     setQty((prev) => {
@@ -72,9 +73,9 @@ export default function SaltCalculator() {
           Quanto sódio você já comeu hoje?
         </h1>
         <p className="max-w-[640px] text-[15px] text-plum-soft">
-          Toque nos alimentos que você comeu em cada refeição de um dia
-          comum. O pote ao lado enche conforme o sódio se acumula — o limite
-          recomendado pela OMS é 2.000mg (5g de sal) por dia.
+          Toque nos alimentos que você comeu em cada refeição de um dia comum. O
+          pote ao lado enche conforme o sódio se acumula — o limite recomendado
+          pela OMS é 2.000mg (5g de sal) por dia.
         </p>
       </header>
 
@@ -105,54 +106,91 @@ export default function SaltCalculator() {
           ))}
         </div>
 
-        <div className="sticky top-0 z-10 order-first rounded-[18px] border-[1.5px] border-line bg-white p-5 shadow-summary md:static md:order-none">
-          <div className="flex items-center justify-center py-1.5 pb-2.5">
-            <JarSvg pct={pct} color={color} />
-          </div>
-          <div className="mb-2.5 text-center text-[11.5px] uppercase tracking-[.06em] text-plum-soft">
-            do limite diário
-          </div>
-          <div
-            className="mt-1 text-center font-serif text-[38px] font-bold leading-none transition-colors duration-300"
-            style={{ color }}
-          >
-            {Math.round(pct)}%
-          </div>
-
-          <div className="flex justify-between border-b border-line py-[7px] text-[13.5px]">
-            <span className="text-plum-soft">Sódio total</span>
-            <span className="font-bold">{formatPtBr(totalMg)} mg</span>
-          </div>
-          <div className="flex justify-between border-b border-line py-[7px] text-[13.5px]">
-            <span className="text-plum-soft">Sal equivalente</span>
-            <span className="font-bold">{formatPtBr(saltG, 1)} g</span>
-          </div>
-          <div className="flex justify-between py-[7px] text-[13.5px]">
-            <span className="text-plum-soft">Colheres de chá de sal</span>
-            <span className="font-bold">{formatPtBr(spoons, 1)}</span>
-          </div>
-
-          <div
-            className={`mt-3 rounded-xl p-3 text-[13px] font-semibold leading-snug ${msgClass}`}
-          >
-            {msg}
-          </div>
-
+        <div className="sticky top-5 z-10 order-first rounded-[18px] border-[1.5px] border-line bg-white shadow-summary md:static md:order-none">
+          {/* Botão de toggle — aparece só no mobile */}
           <button
             type="button"
-            onClick={resetAll}
-            className="mt-3.5 w-full rounded-[10px] bg-plum p-3 text-sm font-bold tracking-[.02em] text-white active:scale-[.98]"
+            onClick={() => setIsSummaryOpen((prev) => !prev)}
+            aria-expanded={isSummaryOpen}
+            className="flex w-full items-center justify-between p-4 md:hidden"
           >
-            Recomeçar (próxima pessoa)
+            <span className="flex items-center gap-2 text-sm font-semibold text-plum">
+              <span
+                className="inline-block h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: color }}
+              />
+              Resumo: {Math.round(pct)}% do limite
+            </span>
+            <svg
+              className={`h-5 w-5 text-plum-soft transition-transform duration-200 ${
+                isSummaryOpen ? "rotate-180" : ""
+              }`}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <path
+                d="M6 9l6 6 6-6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
+
+          {/* Conteúdo: colapsável no mobile, sempre visível no desktop */}
+          <div
+            className={`overflow-hidden px-5 transition-[max-height] duration-300 ease-in-out md:!max-h-none md:overflow-visible md:pt-5 ${
+              isSummaryOpen ? "max-h-[1200px] pb-5" : "max-h-0"
+            }`}
+          >
+            <div className="flex items-center justify-center py-1.5 pb-2.5">
+              <JarSvg pct={pct} color={color} />
+            </div>
+            <div className="mb-2.5 text-center text-[11.5px] uppercase tracking-[.06em] text-plum-soft">
+              do limite diário
+            </div>
+            <div
+              className="mt-1 text-center font-serif text-[38px] font-bold leading-none transition-colors duration-300"
+              style={{ color }}
+            >
+              {Math.round(pct)}%
+            </div>
+
+            <div className="flex justify-between border-b border-line py-[7px] text-[13.5px]">
+              <span className="text-plum-soft">Sódio total</span>
+              <span className="font-bold">{formatPtBr(totalMg)} mg</span>
+            </div>
+            <div className="flex justify-between border-b border-line py-[7px] text-[13.5px]">
+              <span className="text-plum-soft">Sal equivalente</span>
+              <span className="font-bold">{formatPtBr(saltG, 1)} g</span>
+            </div>
+            <div className="flex justify-between py-[7px] text-[13.5px]">
+              <span className="text-plum-soft">Colheres de chá de sal</span>
+              <span className="font-bold">{formatPtBr(spoons, 1)}</span>
+            </div>
+
+            <div
+              className={`mt-3 rounded-xl p-3 text-[13px] font-semibold leading-snug ${msgClass}`}
+            >
+              {msg}
+            </div>
+
+            <button
+              type="button"
+              onClick={resetAll}
+              className="mt-3.5 w-full rounded-[10px] bg-plum p-3 text-sm font-bold tracking-[.02em] text-white active:scale-[.98]"
+            >
+              Recomeçar (próxima pessoa)
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="mt-6 border-t border-line pt-3 text-[11.5px] leading-relaxed text-plum-soft">
-        Limite diário: OMS recomenda até 2.000mg de sódio (5g de sal) por
-        dia. Valores de sódio são médias de referência de porções comuns e
-        rótulos de fabricantes — servem para fins educativos desta
-        atividade.
+        Limite diário: OMS recomenda até 2.000mg de sódio (5g de sal) por dia.
+        Valores de sódio são médias de referência de porções comuns e rótulos de
+        fabricantes — servem para fins educativos desta atividade.
       </div>
     </div>
   );
